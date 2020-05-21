@@ -12,8 +12,8 @@ class Listing < ActiveRecord::Base
   validates :price, presence: true
   validates :neighborhood, presence: true
 
-  after_save :set_host_as_host
-  before_destroy :unset_host_as_host
+  before_create :set_host_true
+  before_destroy :set_host_false
 
   def average_review_rating
     reviews.average(:rating)
@@ -34,15 +34,15 @@ class Listing < ActiveRecord::Base
 
 
 
-  def unset_host_as_host
-    if Listing.where(host: host).where.not(id: id).empty?
-      host.update(is_host: false)
-    end
+  def set_host_true
+    self.host.host = true
+    self.host.save
   end
 
-  def set_host_as_host
-    unless host.is_host?
-      host.update(is_host: true)
+  def set_host_false
+    if self.host.listings.count == 1
+      self.host.host = false
+      self.host.save
     end
   end
 end
